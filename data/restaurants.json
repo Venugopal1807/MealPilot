@@ -1,0 +1,42 @@
+[
+    {
+      "restaurant": "Hyderabad Spice House",
+      "dish": "Spicy Chicken Biryani",
+      "price": 220,
+      "cuisine": "Hyderabadi",
+      "spicy": true,
+      "ingredients": ["chicken", "rice", "spices"]
+    },
+    {
+      "restaurant": "Green Bowl Kitchen",
+      "dish": "Paneer Rice Bowl",
+      "price": 180,
+      "cuisine": "Indian",
+      "spicy": true,
+      "ingredients": ["paneer", "rice", "spices"]
+    },
+    {
+      "restaurant": "Andhra Meals Corner",
+      "dish": "Spicy Andhra Chicken Meal",
+      "price": 240,
+      "cuisine": "Andhra",
+      "spicy": true,
+      "ingredients": ["chicken", "rice", "chilli"]
+    },
+    {
+      "restaurant": "Classic Veg Kitchen",
+      "dish": "Vegetable Fried Rice",
+      "price": 160,
+      "cuisine": "Chinese",
+      "spicy": false,
+      "ingredients": ["rice", "vegetables", "soy sauce"]
+    },
+    {
+      "restaurant": "Biryani Express",
+      "dish": "Chicken Dum Biryani",
+      "price": 280,
+      "cuisine": "Hyderabadi",
+      "spicy": true,
+      "ingredients": ["chicken", "rice", "spices"]
+    }
+  ]

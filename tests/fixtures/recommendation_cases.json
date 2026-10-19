@@ -1,0 +1,628 @@
+[
+  {
+    "name": "budget_boundary",
+    "request": {"budget": 220},
+    "expected": [["Vegetable Fried Rice", 0], ["Paneer Rice Bowl", 0], ["Spicy Chicken Biryani", 0]]
+  },
+  {
+    "name": "ingredient_exclusion",
+    "request": {"budget": 300, "avoid_ingredients": [" CHICKEN "]},
+    "expected": [["Vegetable Fried Rice", 0], ["Paneer Rice Bowl", 0]]
+  },
+  {
+    "name": "combined_preferences",
+    "request": {"budget": 250, "preferred_cuisine": "Hyderabadi", "want_spicy": true},
+    "expected": [["Spicy Chicken Biryani", 3], ["Paneer Rice Bowl", 1], ["Spicy Andhra Chicken Meal", 1], ["Vegetable Fried Rice", 0]]
+  },
+  {
+    "name": "normalized_cuisine",
+    "request": {"budget": 250, "preferred_cuisine": " CHINESE "},
+    "expected": [["Vegetable Fried Rice", 2], ["Paneer Rice Bowl", 0], ["Spicy Chicken Biryani", 0], ["Spicy Andhra Chicken Meal", 0]]
+  },
+  {
+    "name": "nothing_affordable",
+    "request": {"budget": 100},
+    "expected": []
+  },
+  {
+    "name": "all_meals_excluded",
+    "request": {"budget": 300, "avoid_ingredients": ["rice"]},
+    "expected": []
+  },
+  {
+    "name": "required_ingredients",
+    "request": {"budget": 220, "required_ingredients": [" PANEER ", "rice"]},
+    "expected": [["Paneer Rice Bowl", 0]]
+  },
+  {
+    "name": "contradictory_constraints",
+    "request": {"budget": 300, "required_ingredients": ["chicken"], "avoid_ingredients": ["chicken"]},
+    "expected": []
+  },
+  {
+    "name": "empty_provider",
+    "request": {"budget": 300},
+    "provider": {"meals": []},
+    "expected": []
+  },
+  {
+    "name": "malformed_catalog",
+    "request": {"budget": 300},
+    "provider": {"meals": {"unexpected": []}},
+    "expected_status": 502,
+    "expected_detail": "Meal provider returned an invalid catalog"
+  },
+  {
+    "name": "missing_ingredients",
+    "request": {"budget": 300, "avoid_ingredients": ["chicken"]},
+    "provider": {"meals": [{"restaurant": "Synthetic", "dish": "Unknown", "price": 100, "cuisine": "Indian", "spicy": false}]},
+    "expected_status": 502
+  },
+  {
+    "name": "invalid_price",
+    "request": {"budget": 300},
+    "provider": {"meals": [{"restaurant": "Synthetic", "dish": "Unknown", "price": -1, "cuisine": "Indian", "spicy": false, "ingredients": ["rice"]}]},
+    "expected_status": 502
+  },
+  {
+    "name": "unknown_ingredients",
+    "request": {"budget": 300, "required_ingredients": ["rice"]},
+    "provider": {"meals": [{"restaurant": "Synthetic", "dish": "Unknown", "price": 100, "cuisine": "Indian", "spicy": false, "ingredients": []}]},
+    "expected_status": 502
+  },
+  {
+    "name": "provider_unavailable",
+    "request": {"budget": 300},
+    "provider": {"failure": "unavailable"},
+    "expected_status": 503,
+    "expected_detail": "Meal recommendations are temporarily unavailable"
+  },
+  {
+    "name": "provider_timeout",
+    "request": {"budget": 300},
+    "provider": {"failure": "timeout"},
+    "expected_status": 504,
+    "expected_detail": "Meal provider timed out"
+  },
+  {
+    "name": "invalid_budget",
+    "request": {"budget": 0},
+    "expected_status": 422
+  },
+  {
+    "name": "boolean_budget",
+    "request": {"budget": true},
+    "expected_status": 422
+  },
+  {
+    "name": "unsupported_dietary_claim",
+    "request": {"budget": 300, "dietary_restrictions": ["vegan"]},
+    "expected_status": 422
+  },
+  {
+    "name": "text_explicit_constraints",
+    "mode": "text",
+    "request": {"text": "spicy Indian meal at most 220 with paneer without chicken"},
+    "expected_outcome": "parsed",
+    "expected_request": {"budget": 220, "avoid_ingredients": ["chicken"], "required_ingredients": ["paneer"], "preferred_cuisine": "indian", "want_spicy": true},
+    "expected": [["Paneer Rice Bowl", 3]]
+  },
+  {
+    "name": "text_equivalent_constraints",
+    "mode": "text",
+    "request": {"text": "WITHOUT chicken, WITH paneer; budget 220; INDIAN spicy food!"},
+    "expected_outcome": "parsed",
+    "expected_request": {"budget": 220, "avoid_ingredients": ["chicken"], "required_ingredients": ["paneer"], "preferred_cuisine": "indian", "want_spicy": true},
+    "expected": [["Paneer Rice Bowl", 3]]
+  },
+  {
+    "name": "text_strict_upper_bound",
+    "mode": "text",
+    "request": {"text": "food under 160"},
+    "expected_outcome": "parsed",
+    "expected_request": {"budget": 159, "avoid_ingredients": [], "required_ingredients": [], "preferred_cuisine": null, "want_spicy": false},
+    "expected": []
+  },
+  {
+    "name": "text_cuisine_preference",
+    "mode": "text",
+    "request": {"text": "Chinese food budget 160."},
+    "expected_outcome": "parsed",
+    "expected_request": {"budget": 160, "avoid_ingredients": [], "required_ingredients": [], "preferred_cuisine": "chinese", "want_spicy": false},
+    "expected": [["Vegetable Fried Rice", 2]]
+  },
+  {
+    "name": "text_unsupported_dietary",
+    "mode": "text",
+    "request": {"text": "prefer vegetarian food budget 200"},
+    "expected_outcome": "unsupported",
+    "expected_issue": "unsupported_dietary",
+    "expected": []
+  },
+  {
+    "name": "text_unsupported_nutrition",
+    "mode": "text",
+    "request": {"text": "high protein food budget 200"},
+    "expected_outcome": "unsupported",
+    "expected_issue": "unsupported_nutrition",
+    "expected": []
+  },
+  {
+    "name": "text_unsupported_allergy_safety",
+    "mode": "text",
+    "request": {"text": "allergy-safe food budget 200 without chicken"},
+    "expected_outcome": "unsupported",
+    "expected_issue": "unsupported_safety",
+    "expected": []
+  },
+  {
+    "name": "text_missing_budget",
+    "mode": "text",
+    "request": {"text": "spicy Indian food"},
+    "expected_outcome": "clarification_required",
+    "expected_issue": "missing_budget",
+    "expected": []
+  },
+  {
+    "name": "text_ambiguous_budget",
+    "mode": "text",
+    "request": {"text": "budget 200 or budget 300"},
+    "expected_outcome": "clarification_required",
+    "expected_issue": "ambiguous_budget",
+    "expected": []
+  },
+  {
+    "name": "text_invalid_budget",
+    "mode": "text",
+    "request": {"text": "budget -200"},
+    "expected_outcome": "clarification_required",
+    "expected_issue": "invalid_budget",
+    "expected": []
+  },
+  {
+    "name": "text_unconsumed_requirement",
+    "mode": "text",
+    "request": {"text": "budget 200 delivered in 20 minutes"},
+    "expected_outcome": "clarification_required",
+    "expected_issue": "unrecognized_text",
+    "expected": []
+  },
+  {
+    "name": "text_conflicting_constraints",
+    "mode": "text",
+    "request": {"text": "budget 300 with chicken without chicken"},
+    "expected_outcome": "parsed",
+    "expected_request": {"budget": 300, "avoid_ingredients": ["chicken"], "required_ingredients": ["chicken"], "preferred_cuisine": null, "want_spicy": false},
+    "expected": []
+  },
+  {
+    "name": "text_mandatory_spice",
+    "mode": "text",
+    "request": {"text": "not spicy food budget 200"},
+    "expected_outcome": "unsupported",
+    "expected_issue": "unsupported_mandatory",
+    "expected": []
+  },
+  {
+    "name": "text_malformed_parser",
+    "mode": "text",
+    "request": {"text": "budget 200"},
+    "parser": {"failure": "malformed"},
+    "expected_status": 502,
+    "expected_detail": "Intent parser returned invalid output"
+  },
+  {
+    "name": "text_parser_unavailable",
+    "mode": "text",
+    "request": {"text": "budget 200"},
+    "parser": {"failure": "unavailable"},
+    "expected_status": 503,
+    "expected_detail": "Intent parser is temporarily unavailable"
+  },
+  {
+    "name": "text_parser_timeout",
+    "mode": "text",
+    "request": {"text": "budget 200"},
+    "parser": {"failure": "timeout"},
+    "expected_status": 504,
+    "expected_detail": "Intent parser timed out"
+  },
+  {
+    "name": "exclusion_scope_spicy",
+    "mode": "text",
+    "request": {
+      "text": "without chicken and spicy budget 220"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "ambiguous_preference",
+    "expected": []
+  },
+  {
+    "name": "exclusion_scope_cuisine",
+    "mode": "text",
+    "request": {
+      "text": "no chicken and Indian budget 220"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "ambiguous_preference",
+    "expected": []
+  },
+  {
+    "name": "unfinished_conjunction",
+    "mode": "text",
+    "request": {
+      "text": "budget 220 with rice and"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "ambiguous_preference",
+    "expected": []
+  },
+  {
+    "name": "parser_drops_exclusion",
+    "mode": "text",
+    "request": {
+      "text": "budget 300 without chicken"
+    },
+    "parser": {
+      "output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 300,
+            "avoid_ingredients": [],
+            "required_ingredients": []
+          },
+          "soft_preferences": {
+            "preferred_cuisine": null,
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "budget"
+          ]
+        }
+      }
+    },
+    "expected_status": 502,
+    "expected_detail": "Intent parser returned invalid output"
+  },
+  {
+    "name": "parser_increases_budget",
+    "mode": "text",
+    "request": {
+      "text": "budget 200"
+    },
+    "parser": {
+      "output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 300,
+            "avoid_ingredients": [],
+            "required_ingredients": []
+          },
+          "soft_preferences": {
+            "preferred_cuisine": null,
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "budget"
+          ]
+        }
+      }
+    },
+    "expected_status": 502,
+    "expected_detail": "Intent parser returned invalid output"
+  },
+  {
+    "name": "placeholder_ingredient_evidence",
+    "request": {
+      "budget": 200,
+      "avoid_ingredients": [
+        "chicken"
+      ]
+    },
+    "provider": {
+      "meals": [
+        {
+          "restaurant": "Synthetic",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice",
+            "unknown"
+          ]
+        }
+      ]
+    },
+    "expected_status": 502,
+    "expected_detail": "Meal provider returned an invalid catalog"
+  },
+  {
+    "name": "explicitly_incomplete_ingredients",
+    "request": {
+      "budget": 200,
+      "avoid_ingredients": [
+        "chicken"
+      ]
+    },
+    "provider": {
+      "meals": [
+        {
+          "restaurant": "Synthetic",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice"
+          ],
+          "ingredients_complete": false
+        }
+      ]
+    },
+    "expected_status": 502,
+    "expected_detail": "Meal provider returned an invalid catalog"
+  },
+  {
+    "name": "mixed_valid_and_invalid_catalog",
+    "request": {
+      "budget": 200,
+      "avoid_ingredients": [
+        "chicken"
+      ]
+    },
+    "provider": {
+      "meals": [
+        {
+          "restaurant": "Synthetic",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice"
+          ]
+        },
+        {
+          "restaurant": "Incomplete",
+          "dish": "Unknown",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false
+        }
+      ]
+    },
+    "expected_status": 502,
+    "expected_detail": "Meal provider returned an invalid catalog"
+  },
+  {
+    "name": "explicit_complete_evidence",
+    "request": {
+      "budget": 200
+    },
+    "provider": {
+      "meals": [
+        {
+          "restaurant": "Synthetic",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice"
+          ],
+          "ingredients_complete": true
+        }
+      ]
+    },
+    "expected": [
+      [
+        "Bowl",
+        0
+      ]
+    ],
+    "expected_candidates": [
+      {
+        "restaurant": "Synthetic",
+        "dish": "Bowl",
+        "price": 100,
+        "cuisine": "Indian",
+        "spicy": false,
+        "ingredients": [
+          "rice"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "text_with_incomplete_catalog",
+    "mode": "text",
+    "request": {
+      "text": "budget 200 with rice"
+    },
+    "provider": {
+      "meals": [
+        {
+          "restaurant": "Synthetic",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice"
+          ],
+          "ingredients_complete": false
+        }
+      ]
+    },
+    "expected_status": 502,
+    "expected_detail": "Meal provider returned an invalid catalog"
+  },
+  {
+    "name": "text_provider_timeout",
+    "mode": "text",
+    "request": {
+      "text": "budget 200"
+    },
+    "provider": {
+      "failure": "timeout"
+    },
+    "expected_status": 504,
+    "expected_detail": "Meal provider timed out"
+  },
+  {
+    "name": "text_provider_unavailable",
+    "mode": "text",
+    "request": {
+      "text": "budget 200"
+    },
+    "provider": {
+      "failure": "unavailable"
+    },
+    "expected_status": 503,
+    "expected_detail": "Meal recommendations are temporarily unavailable"
+  },
+  {
+    "name": "invalid_request_before_provider_failure",
+    "request": {
+      "budget": false
+    },
+    "provider": {
+      "failure": "unavailable"
+    },
+    "expected_status": 422
+  },
+  {
+    "name": "clarification_before_provider_failure",
+    "mode": "text",
+    "request": {
+      "text": "spicy food"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "missing_budget",
+    "expected": [],
+    "provider": {
+      "failure": "unavailable"
+    }
+  },
+  {
+    "name": "identical_dish_names_tie",
+    "request": {
+      "budget": 200
+    },
+    "provider": {
+      "meals": [
+        {
+          "restaurant": "B",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice"
+          ]
+        },
+        {
+          "restaurant": "A",
+          "dish": "Bowl",
+          "price": 100,
+          "cuisine": "Indian",
+          "spicy": false,
+          "ingredients": [
+            "rice"
+          ]
+        }
+      ]
+    },
+    "expected": [
+      [
+        "Bowl",
+        0
+      ],
+      [
+        "Bowl",
+        0
+      ]
+    ],
+    "expected_candidates": [
+      {
+        "restaurant": "A",
+        "dish": "Bowl",
+        "price": 100,
+        "cuisine": "Indian",
+        "spicy": false,
+        "ingredients": [
+          "rice"
+        ]
+      },
+      {
+        "restaurant": "B",
+        "dish": "Bowl",
+        "price": 100,
+        "cuisine": "Indian",
+        "spicy": false,
+        "ingredients": [
+          "rice"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "parser_cannot_accept_unknown_requirement",
+    "mode": "text",
+    "request": {
+      "text": "budget 200 delivered in 20 minutes"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "unrecognized_text",
+    "expected": [],
+    "parser": {
+      "output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 200,
+            "avoid_ingredients": [],
+            "required_ingredients": []
+          },
+          "soft_preferences": {
+            "preferred_cuisine": null,
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "budget"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "name": "explicit_preference_after_exclusion",
+    "mode": "text",
+    "request": {
+      "text": "without chicken; prefer spicy; budget 220"
+    },
+    "expected_outcome": "parsed",
+    "expected_request": {
+      "budget": 220,
+      "avoid_ingredients": [
+        "chicken"
+      ],
+      "required_ingredients": [],
+      "preferred_cuisine": null,
+      "want_spicy": true
+    },
+    "expected": [
+      [
+        "Paneer Rice Bowl",
+        1
+      ],
+      [
+        "Vegetable Fried Rice",
+        0
+      ]
+    ]
+  }
+]

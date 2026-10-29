@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A small meal discovery demo with explicit constraints and transparent recommendations.">
+  <title>MealPilot · Find your next meal</title>
+  <link rel="stylesheet" href="/static/demo.css">
+  <script src="/static/demo.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to meal finder</a>
+  <header class="topbar"><a class="brand" href="/" aria-label="MealPilot home">Meal<span>Pilot</span><small>AI</small></a><nav aria-label="Page sections"><a href="#how-it-works">How it works</a><a href="#demo">Try the demo <span aria-hidden="true">↗</span></a></nav></header>
+  <main id="main">
+    <div class="intro"><p class="eyebrow"><span aria-hidden="true">✳</span> A LITTLE LESS “WHAT SHOULD I EAT?”</p><h1>Your next meal.<br><span>Your rules.</span></h1><p class="lead">A budget. A few preferences. A clearer choice.<br class="desktop-break"> Tell MealPilot what matters, and see what fits.</p><p class="demo-label"><span aria-hidden="true">●</span> MOCK CATALOG DEMO <span class="badge-note">Real constraints. Demo meals.</span></p></div>
+    <p id="status" class="sr-only" role="status" aria-live="polite"></p>
+    <div class="workspace" id="demo">
+      <section class="request-panel" aria-labelledby="request-title">
+        <div class="panel-body"><p class="step">01 / MAKE IT YOURS</p><h2 id="request-title">What sounds good?</h2><p class="panel-intro">Start with your budget. Tell us what’s in and what’s out.</p>
+          <form id="meal-form" aria-label="Find a meal">
+            <label for="meal-request">Describe your meal</label>
+            <textarea id="meal-request" name="text" rows="4" maxlength="2000" required aria-describedby="request-help catalog-help" aria-errormessage="error" aria-invalid="false" placeholder="Indian meal at most 220 with paneer without chicken"></textarea>
+            <p class="help" id="request-help">Use one whole-number budget. Add ingredients with “with” or “without”; cuisine and “spicy” are preferences.</p>
+            <fieldset class="examples"><legend>Need a starting point?</legend>
+              <button type="button" data-example="Indian meal at most 220 with paneer without chicken">Paneer, please <span aria-hidden="true">↗</span></button>
+              <button type="button" data-example="budget 220; without chicken; prefer spicy">Something spicy <span aria-hidden="true">↗</span></button>
+              <button type="button" data-example="without chicken and spicy budget 220">Try an ambiguous request <span aria-hidden="true">↗</span></button>
+            </fieldset>
+            <details class="grammar"><summary>What can I ask for?</summary><p>Ingredients: chicken, paneer, rice, vegetables, soy sauce, spices, chilli. Cuisines: Indian, Andhra, Hyderabadi, Chinese.</p><p>“Under 220” means at most 219. Separate clauses with semicolons to make your meaning clear. Other wording may need clarification.</p></details>
+            <div class="submit-area"><button id="submit" class="primary" type="submit">Find my meal <span aria-hidden="true">→</span></button></div>
+          </form>
+        </div>
+      </section>
+      <section class="response-panel" aria-labelledby="response-title" aria-busy="false" id="response-panel" data-state="ready">
+        <div class="response-header"><div class="response-topline"><p class="step">02 / SEE WHAT FITS</p><span id="result-state" class="state-chip">Ready when you are</span></div><h2 id="response-title" tabindex="-1">Good choices start here.</h2></div>
+        <div class="loading-indicator" aria-hidden="true"><span></span><span></span><span></span></div>
+        <div id="error" class="error" role="alert" hidden></div>
+        <div id="output"><div class="empty-state"><span class="empty-icon" aria-hidden="true">✳</span><h3>A meal that makes sense for you.</h3><p>Your request becomes a clear set of constraints. Then we check the mock catalog and explain every match.</p><div class="principles"><span>Budget respected</span><span>Ingredients checked</span><span>Ranking explained</span></div></div></div>
+      </section>
+    </div>
+    <section class="how-section" id="how-it-works" aria-labelledby="how-title"><div class="section-heading"><p class="eyebrow">A CLEAR PATH FROM REQUEST TO RESULT</p><h2 id="how-title">You ask. We show our work.</h2><p>No mystery scores. No quietly dropped requirements.</p></div><ol class="how-grid"><li><span class="how-number">01</span><h3>Understand the request</h3><p>We interpret the supported budget, ingredients and preferences. Unclear wording gets a clarification, not a guess.</p></li><li><span class="how-number">02</span><h3>Keep your constraints</h3><p>Budget caps and ingredient requirements filter the catalog. A preference never overrides a hard constraint.</p></li><li><span class="how-number">03</span><h3>Explain the matches</h3><p>Eligible meals are ranked by preferences, then price. You see the listed facts and the reasons behind the order.</p></li></ol></section>
+    <section class="trust-panel" aria-labelledby="trust-title"><div><p class="eyebrow">BUILT AROUND CLEAR BOUNDARIES</p><h2 id="trust-title">Your constraints<br>stay in the picture.</h2><p>When nothing fits, we say so. When a request is unclear, we ask you to refine it.</p></div><ul><li><span aria-hidden="true">✓</span><div><strong>Rules before ranking</strong><p>Only meals that meet the supported hard constraints are ranked.</p></div></li><li><span aria-hidden="true">✓</span><div><strong>Listed facts, visible reasons</strong><p>Results use the mock catalog’s data. No invented prices or ingredients.</p></div></li><li><span aria-hidden="true">✓</span><div><strong>A discovery demo, with honest limits</strong><p>No live ordering, restaurant availability or verified dietary safety.</p></div></li></ul></section>
+    <aside class="catalog-note" id="catalog-help"><strong>Demo data. Clear expectations.</strong> Results come from a mock catalog. Prices use demo catalog units and are item prices, not checkout totals. Ingredient lists do not establish dietary or allergy safety. No live restaurant availability, Swiggy connection or ordering.</aside>
+  </main>
+  <footer><span>MealPilot AI</span><span>Explicit constraints. Transparent choices.</span></footer>
+  <noscript><p class="error">JavaScript is required to submit requests in this demo. The API documentation is available at <a href="/docs">/docs</a>.</p></noscript>
+</body>
+</html>

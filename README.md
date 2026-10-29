@@ -3,6 +3,49 @@
 A local FastAPI meal recommender backed by the existing mock catalog in
 `data/restaurants.json`. No Swiggy credentials or network access are needed.
 
+## Run the web demo
+
+From the repository root, with the existing application dependencies available:
+
+```powershell
+$env:MEALPILOT_INTENT_BACKEND = "deterministic"
+.\.venv\Scripts\python.exe -B -m uvicorn app.main:app --host 127.0.0.1 --port 8765
+```
+
+Open **http://127.0.0.1:8765/**. The static HTML/CSS/JavaScript frontend is served
+by FastAPI, with no frontend build, framework, CDN, or additional dependencies.
+It submits `{"text": "..."}` to the existing `/recommend/text` route. Try
+`Indian meal at most 220 with paneer without chicken`, an ambiguous request such
+as `without chicken and spicy budget 220`, or `budget 100` for no matches.
+
+The page shows returned intent, ingredients, catalog prices, scores and reasons.
+Clarification, unsupported requests, empty results, validation errors, loading
+and service failures have distinct states. It does not store requests in browser
+storage. Prices remain integer catalog units; no currency or checkout totals are
+inferred. All meals are mock data, with no availability, dietary-safety or ordering
+claim. The server's existing parser configuration still applies: use the command
+above for the local deterministic demo. There is no browser Gemini selector.
+
+Frontend assets live in `app/static/`; `/docs` retains the existing API explorer.
+Run `python -B -m unittest discover -s tests -p test_web_demo.py -v` for the focused
+asset/API checks, or the full offline suite documented below. Use the same Python
+environment that runs the application.
+
+Optional browser regression checks: with the deterministic server running,
+`node tests/web_demo_smoke.cjs` uses an already installed Playwright and Edge.
+If Playwright is installed elsewhere, set `MEALPILOT_PLAYWRIGHT_MODULE` to that
+module's path. It is not an application dependency. The checks use the real local
+API for normal requests and injected browser responses for failures/XSS, block
+external page requests, and save desktop/mobile screenshots under ignored `build/`.
+
+The refined UI uses a warm orange palette with centralized CSS tokens for colors,
+surfaces, borders, radii, spacing and motion. It uses a local Poppins font if
+available, otherwise a system fallback; no font download is required. Request
+states have text labels as well as distinct styling, reduced-motion preferences
+disable animation, and the input has an associated validation-error message.
+The reference videos inform visual hierarchy only: ordering, payment, tracking,
+accounts and dietary-safety concepts shown in them are not demo capabilities.
+
 The verified environment is Windows with Python 3.14, FastAPI 0.141.1, Pydantic
 2.13.4, and Uvicorn 0.52.4. Existing direct dependencies are pinned in
 `requirements.txt`; transitive dependencies are not fully locked. If your chosen
@@ -74,7 +117,7 @@ type, never exception text, request bodies, or tokens. Configure that logger at
 INFO to collect completion records. No automatic retries or network deadline
 enforcement are implemented: timeout tests simulate a provider-reported timeout.
 
-## Natural-language boundary (v0.1.3)
+## Natural-language boundary
 
 `POST /intent` accepts `{"text": "..."}` and returns a validated intent only.
 `POST /recommend/text` accepts the same body and, for a parsed intent, returns
@@ -85,16 +128,15 @@ with its existing fields and behavior. Text must be a nonblank string of at most
 
 The flow is: bounded text request -> application capability guard -> injected
 `IntentParser` -> strictly validated `MealIntent` -> existing `MealRequest` ->
-existing mock provider and deterministic optimizer. No LLM, remote parser,
-credentials, or new dependencies are needed. The parser never searches for meals
+existing mock provider and deterministic optimizer. The default deterministic mode needs no LLM, remote parser, credentials, or new dependencies. The parser never searches for meals
 or ranks candidates. Nested adapter-supplied models are revalidated too.
 Schema validity alone does not establish fidelity to the user request. Accepted
 adapter output must also match the supported local grammar's explicit meaning,
 using the optimizer's case/whitespace/set matching semantics. Changed budgets,
 dropped exclusions, or invented requirements return 502 before provider search.
 Unknown grammar requires clarification even if an injected adapter proposes a
-schema-valid intent. Expanding that acceptance policy requires reviewed grammar
-and fixtures; an optional future LLM cannot expand it implicitly.
+schema-valid intent. Gemini mode adds the independently reviewed paraphrases
+documented below; a model cannot expand the acceptance policy implicitly.
 
 For example, `spicy Indian meal at most 220 with paneer without chicken` produces:
 
@@ -245,6 +287,155 @@ payment, order, or booking routes. Catalog prices are mock facts, not live quote
 
 See `docs/swiggy-integration.md` for the future adapter contract, official sources,
 and unresolved authentication guidance. Access and credentials remain pending.
-The next local milestone is to expand adversarial intent fixtures and measure
-grammar coverage before considering an optional LLM parser adapter. A real
+The next milestone is an explicitly authorized real-model evaluation of the optional
+Gemini adapter and a review of broader semantic coverage. A real
 commerce provider requires a separately authorized integration task.
+
+## Optional Gemini parser (v0.2.0)
+
+Flow: text -> independent capability guard -> configured parser -> shared strict
+intent schema and independent meaning comparison -> mock catalog -> complete
+catalog validation -> deterministic eligibility and ranking -> response.
+`/intent`, `/recommend/text`, and `/recommend` keep their response contracts.
+
+Default `MEALPILOT_INTENT_BACKEND=deterministic` uses the original local grammar.
+Only `gemini` enables external interpretation; unknown backends fail closed.
+Gemini uses the official generateContent REST API via Python's standard library;
+requirements.txt is unchanged, and no package installation is required.
+The request uses a JSON schema derived from ParsedIntent, but local validation
+and semantic checks remain authoritative. No tool execution is offered to the model.
+
+Set process environment variables in PowerShell before starting the server:
+
+```powershell
+$env:MEALPILOT_INTENT_BACKEND = "gemini"
+$env:GEMINI_API_KEY = "<your API key>"
+$env:MEALPILOT_GEMINI_MODEL = "<available Gemini model supporting structured output>"
+$env:MEALPILOT_LLM_TIMEOUT_SECONDS = "10"
+.\.venv\Scripts\python.exe -B -m uvicorn app.main:app --host 127.0.0.1 --port 8765
+```
+
+Select the model explicitly using your API account's availability; there is no
+implicit model default or fallback. A consumer AI subscription does not establish
+API credentials, API credits, or quota. `.env.example` contains safe examples;
+.env files are not automatically loaded. In Gemini mode supported user text is
+sent to Google. Keep keys out of source, shell history, logs and shared reports.
+To return to local mode, set MEALPILOT_INTENT_BACKEND to deterministic.
+
+Semantic coverage is deliberately conservative. Gemini mode additionally accepts
+whole-phrase alternatives: `my spending limit is`, `I can spend at most`,
+`do not spend more than`, `don't spend more than` for budget; `do not include`,
+`don't include`, `leave out`, `keep out` for exclusions; `it must contain`,
+`make sure it contains` for required ingredients; `I would prefer` for preferences.
+All remaining wording must pass the original grammar's full-token coverage check.
+This is a limited English expansion, not general language understanding. Unknown
+clauses, ambiguous scope, optional requirements and unsupported mandatory claims
+stop before model/provider access. A model's explicit_fields cannot certify meaning:
+the complete semantic key must agree with independent interpretation, including
+strict budget boundaries, ingredient sets and preferences. Contradictory required
+and excluded ingredients are retained; deterministic eligibility returns no matches.
+
+Missing configuration, rate limits, authentication/network failures and refusals
+produce sanitized 503 responses. Invalid/truncated JSON, missing response fields,
+schema errors or changed meaning produce 502. Transport timeouts produce 504.
+There are no automatic retries and no silent local fallback. The transport passes
+a socket inactivity timeout to urllib, disables redirects to protect the key,
+and bounds response bytes. This is not a total wall-clock deadline, DNS deadline,
+or proof of remote cancellation. Slow trickle responses may exceed the timeout
+in total duration. No client-disconnect cancellation guarantee is made.
+
+### Offline verification
+
+No credentials or SDK are needed. Tests force the default parser locally and
+inject fake Gemini clients; the timeout test uses only a loopback HTTP server.
+The evaluator never constructs a live client from environment configuration.
+
+```powershell
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+.\.venv\Scripts\python.exe -B -m unittest discover -s tests -p test_gemini.py -v
+.\.venv\Scripts\python.exe -B -m evaluation --output evaluation_report.json
+.\.venv\Scripts\python.exe -B -m evaluation --scenarios tests/fixtures/llm_cases.json --output llm_evaluation_report.json
+ git diff --check
+```
+
+The same commands work with `py -3.14` when that selected interpreter has the
+application dependencies installed. Original 51 regression expectations remain
+unchanged. The separate nine LLM fixtures use recorded synthetic outputs through
+the real adapter and preserve independent constraint, grounding and provider-call
+oracles. Fault injection still requires all ten intended detecting invariants.
+These are adapter contract results, not real-model accuracy measurements. No real
+model evaluation or model call was performed; access, model/schema compatibility,
+real quotas and live reliability remain unverified. A live evaluation must be an
+explicit separate task with reviewed prompts and independent expected constraints.
+
+Official contracts consulted for this adapter:
+[Google REST generateContent](https://ai.google.dev/api/generate-content),
+[structured output](https://ai.google.dev/gemini-api/docs/structured-output),
+[API keys](https://ai.google.dev/gemini-api/docs/api-key),
+[errors](https://ai.google.dev/gemini-api/docs/troubleshooting),
+[Google SDK reference](https://googleapis.github.io/python-genai/), and
+[urllib timeouts](https://docs.python.org/3/library/urllib.request.html).
+
+## Controlled real-model benchmark (v0.2.1)
+
+`live_evaluation.py` is separate from normal evaluation. No real-model results
+exist from implementation: all harness tests use fake clients. The 25 synthetic
+reference cases in `tests/fixtures/live_gemini_cases.json` have agent-authored
+literal product-rule labels, with hard constraints, soft preferences,
+clarification conditions and unsupported requirements separated. They were not
+harvested from benchmark model responses or parser output. The requested
+human-authored reference set remains pending independent human review; automated
+policy agreement does not establish human authorship or approval. All reference
+fields, including unresolved-case facts and issue codes, are strictly validated
+before confirmation or client creation. A case-by-case review table is in the
+verification document.
+
+Run all offline checks without credentials:
+
+```powershell
+py -3.14 -B -m unittest discover -s tests -v
+py -3.14 -B -m evaluation --output evaluation_report.json
+py -3.14 -B -m evaluation --scenarios tests/fixtures/llm_cases.json --output llm_evaluation_report.json
+git diff --check
+```
+
+Only after reviewing the labels and deciding to spend API quota, configure
+`GEMINI_API_KEY` through your local secrets process, explicitly select
+`MEALPILOT_GEMINI_MODEL`, and optionally set `MEALPILOT_LLM_TIMEOUT_SECONDS`.
+Then the following **live command sends synthetic prompts to Google**:
+
+```powershell
+py -3.14 -B -m live_evaluation --live --max-calls 25 --output build/gemini-live-report.json
+```
+
+Both `--live` and a maximum-call budget of 1..25 are mandatory. The runner displays
+the plan before any request and requires an exact confirmation (`RUN 15` for the
+current fixture). There is no confirmation bypass. Fifteen prompts currently pass
+the application gate; ten are evaluated locally without a model call. A smaller
+budget limits eligible requests in fixture order. An existing output file is
+refused; missing parent directories are created after confirmation. No automatic
+retries or meal-provider/commerce calls occur. Authentication
+or quota/rate-limit failure stops immediately; three consecutive attempted
+transport failures stop the run. Completed cases and caught interruptions are
+saved incrementally, with unrun case IDs listed.
+
+Reports distinguish model interpretations before semantic rejection from the
+validated application outcome. They retain exact-match counts, hard-constraint
+precision/recall, omitted/changed reference facts, incorrect acceptance/rejection,
+schema-valid semantic errors, and separate policy/clarification/unsupported metrics.
+Every ratio includes its denominator; transport failures are excluded from model
+accuracy and reported separately. Policy-blocked cases never count as evidence
+of Gemini understanding. Client latency and trustworthy reported token counts
+include coverage information; cost is unavailable. Reports omit credentials,
+headers, raw responses and exception messages. A small guarded benchmark cannot
+establish broad natural-language accuracy or production reliability.
+Missing token usage has a null total and a zero coverage denominator, rather
+than an apparent zero-token result. Per-case scores identify the observed outcome
+and changed soft-preference field names without persisting arbitrary model text.
+
+The adapter stays on generateContent; no protocol migration is included. Model
+availability/schema compatibility and live behavior remain unverified. See
+[v0.2.1 verification](docs/v0.2.1-verification.md) for the actual offline results,
+metric definitions, official compatibility references and an example report
+explicitly marked as simulated. No live run should occur implicitly in tests,
+normal deterministic evaluation or implementation work.

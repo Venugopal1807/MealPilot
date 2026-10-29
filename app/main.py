@@ -1,9 +1,11 @@
 import json
 import logging
+from pathlib import Path
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from app.candidates import InvalidCandidateData
@@ -15,6 +17,13 @@ from app.schemas import IntentResult, MealRequest, NaturalLanguageRequest, Parse
 
 app = FastAPI(title="MealPilot AI", version="0.2.0")
 logger = logging.getLogger("mealpilot")
+STATIC_DIR = Path(__file__).resolve().parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def demo_page():
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.middleware("http")

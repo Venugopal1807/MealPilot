@@ -1,0 +1,360 @@
+{
+  "application_version": "0.2.0",
+  "catalog_sha256": "8b6414d8606a9d13199dba64443fa6ac656fcf6a3b4f67450c875c07506ccf0d",
+  "execution_mode": "in_process_route_functions",
+  "fault_injection": {
+    "cases": [
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "over_budget",
+        "observed_failures": [
+          "ranking",
+          "hard_constraints"
+        ],
+        "required_detection": "hard_constraints"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "excluded_ingredient",
+        "observed_failures": [
+          "ranking",
+          "hard_constraints"
+        ],
+        "required_detection": "hard_constraints"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "fabricated_price",
+        "observed_failures": [
+          "catalog_grounding"
+        ],
+        "required_detection": "catalog_grounding"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "duplicate_candidate",
+        "observed_failures": [
+          "catalog_grounding",
+          "ranking"
+        ],
+        "required_detection": "catalog_grounding"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "incorrect_count",
+        "observed_failures": [
+          "response_contract"
+        ],
+        "required_detection": "response_contract"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "reversed_ranking",
+        "observed_failures": [
+          "ranking"
+        ],
+        "required_detection": "ranking"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 0,
+        "fault": "search_for_unresolved",
+        "observed_failures": [
+          "provider_access"
+        ],
+        "required_detection": "provider_access"
+      },
+      {
+        "actual_provider_calls": 2,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "retry_after_timeout",
+        "observed_failures": [
+          "provider_access"
+        ],
+        "required_detection": "provider_access"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "skip_incomplete_record",
+        "observed_failures": [
+          "status",
+          "catalog_grounding"
+        ],
+        "required_detection": "catalog_grounding"
+      },
+      {
+        "actual_provider_calls": 1,
+        "detected": true,
+        "expected_provider_calls": 1,
+        "fault": "malformed_response",
+        "observed_failures": [
+          "response_contract",
+          "ranking"
+        ],
+        "required_detection": "response_contract"
+      }
+    ],
+    "detected": 10,
+    "total": 10,
+    "undetected": 0
+  },
+  "implementation_sha256": {
+    "app/candidates.py": "9834c84d482d0f18cae492a3c20b9f7f5f79e27c82cd4739c35ac3db2c1f20b7",
+    "app/gemini.py": "a1930efeb6fdac0804953af1186cad614764cfd1ffbf8f5364e8ffabacf53e86",
+    "app/intent.py": "4e69e942c74e8ed5a4b21ff2188a3fc8c03e307c8d682c64cd17e050b268c717",
+    "app/main.py": "67163ed99a0faa1f273cee974d25528ac7ea6bfb9d48e395708155bcbf20c8b6",
+    "app/mock_mcp.py": "efc249625e30e872db5adb042f49234a2ebf284cad69b2572a133bec49d95044",
+    "app/optimizer.py": "15829926a976295c6cf45606ad53be7b8d68de0a9720db2b7aa7a629ff819454",
+    "app/providers.py": "14fd4289845f1dcdd8614f36127710f5fa671dfda060099b671db67efca49dfc",
+    "app/schemas.py": "bda55836ed5da45287b0c9c0774a56622ba80f31eac0929d782143a55608e41c",
+    "evaluation.py": "3fe690de7e23dea2625d62b5a1c4a027ea5df23806b1f3a25b11a769ab7c1e62",
+    "tests/test_api.py": "0e9f9f4b2b2088a50be8f49697d23a5f5236ead2b7f61f25b891f3b7dc814bde",
+    "tests/test_candidates.py": "f99c30bb36f2da883469828fb3723af24cd50ce62e4ce18eb9688b6c0e34de7a",
+    "tests/test_evaluation.py": "28a28ad5d51112f727662892a33ee0bba655a4d70b71f1b57b7eba98bf2426ca",
+    "tests/test_gemini.py": "2f966513be0fc8859ccbb8d3dc32b9f02ecbc29fba550fcfe3aab80989f8a297",
+    "tests/test_intent.py": "987420a8ef8f12f5716e65bb62022cfd1c570474e0a41a16acb1eba4cbc817d4",
+    "tests/test_optimizer.py": "063e349d9c03d398a913b4727dba4624a10caeecdda1dbe3e30c24d350496517",
+    "tests/test_v013_regressions.py": "9d4f1e049659ae96804b13a261f00fcdc7b09690cde4022f69c58885d27a64b1"
+  },
+  "scenarios": [
+    {
+      "actual": {
+        "intent_request": {
+          "avoid_ingredients": [
+            "chicken"
+          ],
+          "budget": 220,
+          "preferred_cuisine": "indian",
+          "required_ingredients": [
+            "paneer"
+          ],
+          "want_spicy": false
+        },
+        "outcome": "parsed",
+        "provider_calls": 1,
+        "recommendations": [
+          [
+            "Paneer Rice Bowl",
+            2
+          ]
+        ],
+        "status": 200
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "intent_request": {
+          "avoid_ingredients": [
+            "chicken"
+          ],
+          "budget": 220,
+          "preferred_cuisine": "indian",
+          "required_ingredients": [
+            "paneer"
+          ],
+          "want_spicy": false
+        },
+        "outcome": "parsed",
+        "provider_calls": 1,
+        "recommendations": [
+          [
+            "Paneer Rice Bowl",
+            2
+          ]
+        ],
+        "status": 200
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_paraphrase",
+      "passed": true
+    },
+    {
+      "actual": {
+        "issue": "ambiguous_preference",
+        "outcome": "clarification_required",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "issue": "ambiguous_preference",
+        "outcome": "clarification_required",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_scope",
+      "passed": true
+    },
+    {
+      "actual": {
+        "issue": "unrecognized_text",
+        "outcome": "clarification_required",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "issue": "unrecognized_text",
+        "outcome": "clarification_required",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_unknown",
+      "passed": true
+    },
+    {
+      "actual": {
+        "issue": "unsupported_safety",
+        "outcome": "unsupported",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "issue": "unsupported_safety",
+        "outcome": "unsupported",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_safety",
+      "passed": true
+    },
+    {
+      "actual": {
+        "issue": "unsupported_nutrition",
+        "outcome": "unsupported",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "issue": "unsupported_nutrition",
+        "outcome": "unsupported",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_nutrition",
+      "passed": true
+    },
+    {
+      "actual": {
+        "issue": "ambiguous_budget",
+        "outcome": "clarification_required",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "issue": "ambiguous_budget",
+        "outcome": "clarification_required",
+        "provider_calls": 0,
+        "recommendations": [],
+        "status": 200
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_ambiguous",
+      "passed": true
+    },
+    {
+      "actual": {
+        "detail": "Intent parser returned invalid output",
+        "provider_calls": 0,
+        "status": 502
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "provider_calls": 0,
+        "status": 502
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_omitted",
+      "passed": true
+    },
+    {
+      "actual": {
+        "detail": "Intent parser returned invalid output",
+        "provider_calls": 0,
+        "status": 502
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "provider_calls": 0,
+        "status": 502
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_boundary",
+      "passed": true
+    },
+    {
+      "actual": {
+        "detail": "Intent parser returned invalid output",
+        "provider_calls": 0,
+        "status": 502
+      },
+      "catalog_grounding_violations": 0,
+      "expected": {
+        "provider_calls": 0,
+        "status": 502
+      },
+      "failures": [],
+      "hard_constraint_violations": 0,
+      "name": "gemini_invented",
+      "passed": true
+    }
+  ],
+  "scenarios_sha256": "6d6f01aa937dc93434c23c1771a1275d6d8d66239d9adfe0508044415bea3776",
+  "summary": {
+    "catalog_grounding_violations": 0,
+    "clarification_required": 3,
+    "failed": 0,
+    "hard_constraint_violations": 0,
+    "intent_failures": 0,
+    "parsed_intents": 1,
+    "parser_failures": 0,
+    "passed": 9,
+    "provider_access_failures": 0,
+    "provider_failures": 0,
+    "ranking_failures": 0,
+    "response_contract_failures": 0,
+    "total_scenarios": 9,
+    "unexpected_errors": 0,
+    "unsupported_intents": 2,
+    "validation_failures": 0
+  }
+}

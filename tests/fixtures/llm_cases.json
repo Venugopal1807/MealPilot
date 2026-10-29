@@ -1,0 +1,321 @@
+[
+  {
+    "mode": "text",
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "name": "gemini_paraphrase",
+    "request": {
+      "text": "my spending limit is 220; I would prefer Indian; make sure it contains paneer; leave out chicken"
+    },
+    "expected_outcome": "parsed",
+    "expected_request": {
+      "budget": 220,
+      "required_ingredients": [
+        "paneer"
+      ],
+      "avoid_ingredients": [
+        "chicken"
+      ],
+      "preferred_cuisine": "indian",
+      "want_spicy": false
+    },
+    "expected": [
+      [
+        "Paneer Rice Bowl",
+        2
+      ]
+    ]
+  },
+  {
+    "mode": "text",
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "name": "gemini_scope",
+    "request": {
+      "text": "budget 220 without chicken and spicy"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "ambiguous_preference",
+    "expected": []
+  },
+  {
+    "mode": "text",
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "name": "gemini_unknown",
+    "request": {
+      "text": "budget 220 delivered in 20 minutes"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "unrecognized_text",
+    "expected": []
+  },
+  {
+    "mode": "text",
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "name": "gemini_safety",
+    "request": {
+      "text": "budget 220 allergy safe"
+    },
+    "expected_outcome": "unsupported",
+    "expected_issue": "unsupported_safety",
+    "expected": []
+  },
+  {
+    "mode": "text",
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "name": "gemini_nutrition",
+    "request": {
+      "text": "budget 220 high protein"
+    },
+    "expected_outcome": "unsupported",
+    "expected_issue": "unsupported_nutrition",
+    "expected": []
+  },
+  {
+    "mode": "text",
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "name": "gemini_ambiguous",
+    "request": {
+      "text": "budget 200 or budget 300"
+    },
+    "expected_outcome": "clarification_required",
+    "expected_issue": "ambiguous_budget",
+    "expected": []
+  },
+  {
+    "mode": "text",
+    "name": "gemini_omitted",
+    "request": {
+      "text": "budget 220 without chicken"
+    },
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [],
+            "avoid_ingredients": []
+          },
+          "soft_preferences": {
+            "preferred_cuisine": null,
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "budget"
+          ]
+        }
+      }
+    },
+    "expected_status": 502
+  },
+  {
+    "mode": "text",
+    "name": "gemini_boundary",
+    "request": {
+      "text": "under 220"
+    },
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [],
+            "avoid_ingredients": []
+          },
+          "soft_preferences": {
+            "preferred_cuisine": null,
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "budget"
+          ]
+        }
+      }
+    },
+    "expected_status": 502
+  },
+  {
+    "mode": "text",
+    "name": "gemini_invented",
+    "request": {
+      "text": "budget 220"
+    },
+    "parser": {
+      "gemini_output": {
+        "status": "parsed",
+        "intent": {
+          "hard_constraints": {
+            "budget": 220,
+            "required_ingredients": [
+              "paneer"
+            ],
+            "avoid_ingredients": [
+              "chicken"
+            ]
+          },
+          "soft_preferences": {
+            "preferred_cuisine": "indian",
+            "want_spicy": false
+          },
+          "explicit_fields": [
+            "avoid_ingredients",
+            "budget",
+            "preferred_cuisine",
+            "required_ingredients"
+          ]
+        }
+      }
+    },
+    "expected_status": 502
+  }
+]

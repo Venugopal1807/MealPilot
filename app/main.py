@@ -13,7 +13,7 @@ from app.providers import MealProvider, ProviderTimeout, ProviderUnavailable, ge
 from app.schemas import IntentResult, MealRequest, NaturalLanguageRequest, ParsedIntent, UnresolvedIntent
 
 
-app = FastAPI(title="MealPilot AI", version="0.1.3")
+app = FastAPI(title="MealPilot AI", version="0.2.0")
 logger = logging.getLogger("mealpilot")
 
 

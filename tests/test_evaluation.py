@@ -23,7 +23,7 @@ class EvaluationBaselineTests(unittest.TestCase):
         })
         self.assertTrue(all(case["passed"] for case in report["scenarios"]))
         self.assertEqual(report["fault_injection"]["undetected"], 0)
-        self.assertEqual(report["application_version"], "0.1.3")
+        self.assertEqual(report["application_version"], "0.2.0")
         self.assertEqual(report["execution_mode"], "in_process_route_functions")
         self.assertIn("evaluation.py", report["implementation_sha256"])
         self.assertTrue(all(len(digest) == 64 for digest in report["implementation_sha256"].values()))

@@ -6,6 +6,7 @@ catalog facts and makes no provider calls.
 """
 
 import re
+import os
 from typing import Protocol
 
 from pydantic import BaseModel, TypeAdapter, ValidationError
@@ -160,7 +161,9 @@ def parse_intent(text: str, parser: IntentParser) -> IntentResult:
     try:
         # The supported local grammar is an independent acceptance policy, not
         # a license for an injected parser to drop or invent user constraints.
-        reference = RESULT_ADAPTER.validate_python(DeterministicIntentParser().parse(text), strict=True)
+        from app.gemini import GeminiIntentParser, policy_reference
+        reference_text = policy_reference(text) if type(parser) is GeminiIntentParser else text
+        reference = RESULT_ADAPTER.validate_python(DeterministicIntentParser().parse(reference_text), strict=True)
         if isinstance(reference, UnresolvedIntent):
             return reference
         raw = reference.model_dump() if type(parser) is DeterministicIntentParser else parser.parse(text)
@@ -177,4 +180,9 @@ def parse_intent(text: str, parser: IntentParser) -> IntentResult:
 
 
 def get_intent_parser() -> IntentParser:
-    return DeterministicIntentParser()
+    backend = os.environ.get("MEALPILOT_INTENT_BACKEND", "deterministic")
+    if backend == "deterministic":
+        return DeterministicIntentParser()
+    from app.gemini import GeminiIntentParser
+    # Configuration errors are raised inside parse(), so routes sanitize them.
+    return GeminiIntentParser.from_environment(backend)

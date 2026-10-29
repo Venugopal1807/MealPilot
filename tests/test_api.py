@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -40,6 +41,12 @@ async def post_recommend(payload):
 
 
 class ApiTests(unittest.IsolatedAsyncioTestCase):
+    def setUp(self):
+        # Tests never inherit a developer's live parser selection.
+        environment = patch.dict(os.environ, {"MEALPILOT_INTENT_BACKEND": "deterministic"})
+        environment.start()
+        self.addCleanup(environment.stop)
+
     async def test_default_mock_response_contract(self):
         status, body = await post_recommend({"budget": 200})
         self.assertEqual(status, 200)

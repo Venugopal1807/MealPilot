@@ -17,6 +17,7 @@ from pydantic import ValidationError
 
 from app.main import app, MealRequest, get_recommendations, get_text_recommendations
 from app.intent import DeterministicIntentParser, ParserUnavailable
+from app.gemini import GeminiIntentParser
 from app.mock_mcp import DATA_FILE
 from app.providers import MockMealProvider, ProviderTimeout, ProviderUnavailable
 from app.schemas import MealIntent, NaturalLanguageRequest, UnresolvedIntent
@@ -24,6 +25,7 @@ from app.schemas import MealIntent, NaturalLanguageRequest, UnresolvedIntent
 
 DEFAULT_SCENARIOS = Path(__file__).parent / "tests" / "fixtures" / "recommendation_cases.json"
 EVIDENCE_FILES = (
+    "app/gemini.py", "tests/test_gemini.py",
     "app/main.py", "app/intent.py", "app/schemas.py", "app/candidates.py",
     "app/optimizer.py", "app/providers.py", "app/mock_mcp.py", "evaluation.py",
     "tests/test_v013_regressions.py", "tests/test_evaluation.py", "tests/test_api.py",
@@ -74,6 +76,19 @@ class ScenarioParser:
         return {"status": "parsed"}  # Deliberately malformed fixture.
 
 
+class RecordedGeminiClient:
+    """Explicit offline model fixture; never selects a network client."""
+    def __init__(self, output):
+        self.output = output
+        self.calls = 0
+
+    def generate(self, **kwargs):
+        self.calls += 1
+        return {"candidates": [{"finishReason": "STOP", "content": {
+            "parts": [{"text": json.dumps(self.output)}],
+        }}]}
+
+
 def load_scenarios(path: Path) -> list[dict]:
     cases = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(cases, list) or not cases:
@@ -112,7 +127,7 @@ def load_scenarios(path: Path) -> list[dict]:
                 raise ValueError("Unresolved scenarios need an expected issue code")
         if "parser" in case:
             specification = case["parser"]
-            if not isinstance(specification, dict) or set(specification) not in ({"failure"}, {"output"}):
+            if not isinstance(specification, dict) or set(specification) not in ({"failure"}, {"output"}, {"gemini_output"}):
                 raise ValueError("Unsupported parser fixture")
             if "failure" in specification and (not isinstance(specification["failure"], str) or specification["failure"] not in {"unavailable", "timeout", "malformed"}):
                 raise ValueError("Unsupported parser failure")
@@ -245,7 +260,11 @@ def evaluate_scenario(case: dict) -> dict:
     else:
         try:
             if is_text:
-                body = get_text_recommendations(request, ScenarioParser(case.get("parser")), provider)
+                specification = case.get("parser", {})
+                parser = (GeminiIntentParser(client=RecordedGeminiClient(specification["gemini_output"]),
+                                            api_key="offline-fixture", model="gemini-offline")
+                          if "gemini_output" in specification else ScenarioParser(case.get("parser")))
+                body = get_text_recommendations(request, parser, provider)
             else:
                 body = get_recommendations(request, provider)
         except HTTPException as error:
